@@ -89,7 +89,7 @@ void loop() {
   }
 
   if (tickCount == 500) {
-    setColor(1, OFF);
+    setColorAll(PIXEL_COUNT, OFF);
     pixel.show();
   }
   tickCount++;
@@ -131,8 +131,21 @@ void pollEvents() {
 
   Serial.println(get_id(doc));
   Serial.println(get_title(doc));
+  Serial.println(get_color(doc));
 
-  setColor(1, BLUE);
+  if (String(get_color(doc)) == "GREEN") {
+    setColorAll(PIXEL_COUNT, GREEN);
+  } else if (String(get_color(doc)) == "BLUE") {
+      setColorAll(PIXEL_COUNT, BLUE);
+  } else if (String(get_color(doc)) == "RED") {
+      setColorAll(PIXEL_COUNT, RED);
+  } else if (String(get_color(doc)) == "YELLOW") {
+      setColorAll(PIXEL_COUNT, YELLOW);
+  } else if (String(get_color(doc)) == "MAGENTA") {
+      setColorAll(PIXEL_COUNT, MAGENTA);
+  } else if (String(get_color(doc)) == "CYAN") {
+      setColorAll(PIXEL_COUNT, CYAN);
+  }
   pixel.show();
 
   // set next_event_time
@@ -186,5 +199,54 @@ switch (color) {
     break;
   default : // white
     pixel.setPixelColor(target_pixel, 255, 255, 255);
+  }
+}
+
+void setColorAll(int num_pixel, int color) {
+    switch (color) {
+  case RED :
+    for (int i = 0; i < num_pixel; i++) {
+        pixel.setPixelColor(i, 255, 0, 0);
+    }
+    break;
+  case GREEN :
+    for (int i = 0; i < num_pixel; i++) {
+    pixel.setPixelColor(i, 0, 255, 0);
+    };
+    break;
+  case BLUE :
+  for (int i = 0; i < num_pixel; i++) {
+    pixel.setPixelColor(i, 0, 0, 255);
+  }
+    break;
+  case CYAN :
+  for (int i = 0; i < num_pixel; i++) {
+  pixel.setPixelColor(i, 0, 255, 255);
+  }
+  break;
+  case YELLOW :
+  for (int i = 0; i < num_pixel; i++) {
+  pixel.setPixelColor(i, 255, 255, 0);
+  }
+  break;
+  case MAGENTA :
+  for (int i = 0; i < num_pixel; i++) {
+  pixel.setPixelColor(i, 255, 0, 255);
+  }
+  break;
+  case WHITE :
+  for (int i = 0; i < num_pixel; i++) {
+  pixel.setPixelColor(i, 255, 255, 255);
+  }
+  break;
+  case OFF :
+  for (int i = 0; i < num_pixel; i++) {
+  pixel.setPixelColor(i, 0, 0, 0);
+  }
+  break;
+  default : // white
+    for (int i = 0; i < num_pixel; i++) {
+    pixel.setPixelColor(i, 255, 255, 255);
+    }
   }
 }
