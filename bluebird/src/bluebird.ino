@@ -26,7 +26,7 @@
 #define CYAN 5
 #define WHITE 6
 #define OFF 9
-#define SMARTPIXEL 1
+#define SMARTPIXEL 0
 #define INACTIVE 0
 #define ACTIVE 1
 #define RESTING 0
@@ -81,7 +81,7 @@ void loop() {
   }
 
   if (tickCount == 500) {
-    setColor(2, OFF);
+    setColor(1, OFF);
     pixel.show();
   }
   tickCount++;
@@ -124,7 +124,7 @@ void pollEvents() {
   Serial.println(get_id(doc));
   Serial.println(get_title(doc));
 
-  setColor(2, BLUE);
+  setColor(1, BLUE);
   pixel.show();
   tickCount = 0;
 
