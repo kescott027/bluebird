@@ -33,6 +33,10 @@
 #define ALERTING 1
 #define ACKD 2
 
+struct routine_event {
+  char name[]
+};
+
 HttpClient http;
 
 // Headers currently need to be set at init, useful for API keys etc.
@@ -46,6 +50,9 @@ http_request_t request;
 
 http_response_t response;
 
+uint32_t local_device_time;
+
+uint32_t next_event_time;
 
  Adafruit_NeoPixel pixel = Adafruit_NeoPixel(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
 volatile uint64_t tickCount = 0;
@@ -75,9 +82,10 @@ void loop() {
     }
     last_button_state = mom_state;
   }
-  delay(1);
+  // delay(1);
   if (tickCount >= 1000) {
     pollEvents();
+    checkforevents();
   }
 
   if (tickCount == 500) {
@@ -126,8 +134,23 @@ void pollEvents() {
 
   setColor(1, BLUE);
   pixel.show();
+
+  // set next_event_time
+  // set next_event_color
+
   tickCount = 0;
 
+}
+
+void checkforevents() {
+
+}
+
+void store_local_event() {
+  // create start time
+  // create end time
+  // set color
+  // maybe something else
 }
 
 void ackEvent() {
@@ -147,20 +170,20 @@ switch (color) {
     pixel.setPixelColor(target_pixel, 0, 0, 255);
     break;
   case CYAN :
-  pixel.setPixelColor(target_pixel, 0, 255, 255);
-  break;
+    pixel.setPixelColor(target_pixel, 0, 255, 255);
+    break;
   case YELLOW :
-  pixel.setPixelColor(target_pixel, 255, 255, 0);
-  break;
+    pixel.setPixelColor(target_pixel, 255, 255, 0);
+    break;
   case MAGENTA :
-  pixel.setPixelColor(target_pixel, 255, 0, 255);
-  break;
+    pixel.setPixelColor(target_pixel, 255, 0, 255);
+    break;
   case WHITE :
-  pixel.setPixelColor(target_pixel, 255, 255, 255);
-  break;
+    pixel.setPixelColor(target_pixel, 255, 255, 255);
+    break;
   case OFF :
-  pixel.setPixelColor(target_pixel, 0, 0, 0);
-  break;
+    pixel.setPixelColor(target_pixel, 0, 0, 0);
+    break;
   default : // white
     pixel.setPixelColor(target_pixel, 255, 255, 255);
   }
