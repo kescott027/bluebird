@@ -12,7 +12,7 @@
  #include <ArduinoJson.h>
  #include <HttpClient.h>
  // IMPORTANT: Set pixel COUNT, PIN and TYPE
- #define PIXEL_COUNT 2
+ #define PIXEL_COUNT 8
  #define PIXEL_PIN D0
  #define PIXEL_TYPE WS2812B
  #define ARDUINOJSON_ENABLE_PROGMEM 0
@@ -75,11 +75,14 @@ void loop() {
     }
     last_button_state = mom_state;
   }
-  delay(100);
+  delay(1);
   if (tickCount >= 1000) {
     pollEvents();
-  } else if (tickCount >= 500) {
-    setColor(1, OFF);
+  }
+
+  if (tickCount == 500) {
+    setColor(2, OFF);
+    pixel.show();
   }
   tickCount++;
 }
@@ -105,6 +108,7 @@ void change_led_state() {
 void pollEvents() {
   //make web request
   // if a new event exists, go to ALERTING
+  Serial.println("polling Events...");
   request.hostname = "bluebird-bluebird-api.herokuapp.com";
 
   request.port = 80;
@@ -120,8 +124,8 @@ void pollEvents() {
   Serial.println(get_id(doc));
   Serial.println(get_title(doc));
 
-  setColor(1, BLUE);
-
+  setColor(2, BLUE);
+  pixel.show();
   tickCount = 0;
 
 }
