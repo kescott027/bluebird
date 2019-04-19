@@ -7,11 +7,15 @@
 
  #include "application.h"
  #include "neopixel.h"
-
+ #include "Event.h"
+ #include "Routine.h"
+ #include <ArduinoJson.h>
+ #include <HttpClient.h>
  // IMPORTANT: Set pixel COUNT, PIN and TYPE
- #define PIXEL_COUNT 1
+ #define PIXEL_COUNT 2
  #define PIXEL_PIN D0
  #define PIXEL_TYPE WS2812B
+ #define ARDUINOJSON_ENABLE_PROGMEM 0
 // setPixelColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b, uint8_t w)
 
 #define RED 0
@@ -22,12 +26,25 @@
 #define CYAN 5
 #define WHITE 6
 #define OFF 9
-#define SMARTPIXEL 0
+#define SMARTPIXEL 1
 #define INACTIVE 0
 #define ACTIVE 1
 #define RESTING 0
 #define ALERTING 1
 #define ACKD 2
+
+HttpClient http;
+
+// Headers currently need to be set at init, useful for API keys etc.
+http_header_t headers[] = {
+    { "Content-Type", "application/json" },
+    { "Accept" , "*/*"},
+    { NULL, NULL } // NOTE: Always terminate headers will NULL
+};
+
+http_request_t request;
+
+http_response_t response;
 
 
  Adafruit_NeoPixel pixel = Adafruit_NeoPixel(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
@@ -61,7 +78,10 @@ void loop() {
   delay(100);
   if (tickCount >= 1000) {
     pollEvents();
+  } else if (tickCount >= 500) {
+    setColor(1, OFF);
   }
+  tickCount++;
 }
 
 void change_led_state() {
@@ -85,7 +105,25 @@ void change_led_state() {
 void pollEvents() {
   //make web request
   // if a new event exists, go to ALERTING
+  request.hostname = "bluebird-bluebird-api.herokuapp.com";
+
+  request.port = 80;
+
+  request.path = "/api/events/5ca78a91c2f8b2001714758d";
+  //request.path = "/api/routines/5ca78a6fc2f8b2001714758c";
+  http.get(request, response, headers);
+  // json
+  DynamicJsonDocument doc(2048);
+
+  deserializeJson(doc, response.body.c_str());
+
+  Serial.println(get_id(doc));
+  Serial.println(get_title(doc));
+
+  setColor(1, BLUE);
+
   tickCount = 0;
+
 }
 
 void ackEvent() {
