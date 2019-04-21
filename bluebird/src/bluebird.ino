@@ -7,7 +7,7 @@
 
  #include "application.h"
  #include "neopixel.h"
- #include "Event.h"
+ #include "Event.cpp"
  #include "Routine.h"
  #include <ArduinoJson.h>
  #include <HttpClient.h>
@@ -121,21 +121,23 @@ void pollEvents() {
 
   deserializeJson(doc, response.body.c_str());
 
-  Serial.println(get_id(doc));
-  Serial.println(get_title(doc));
-  Serial.println(get_color(doc));
+  Event event(doc);
 
-  if (String(get_color(doc)) == "GREEN") {
+  Serial.println(event._id);
+  Serial.println(event.title);
+  Serial.println(event.color);
+
+  if (String(event.color) == "GREEN") {
     setColorAll(PIXEL_COUNT, GREEN);
-  } else if (String(get_color(doc)) == "BLUE") {
+  } else if (String(event.color) == "BLUE") {
       setColorAll(PIXEL_COUNT, BLUE);
-  } else if (String(get_color(doc)) == "RED") {
+  } else if (String(event.color) == "RED") {
       setColorAll(PIXEL_COUNT, RED);
-  } else if (String(get_color(doc)) == "YELLOW") {
+  } else if (String(event.color) == "YELLOW") {
       setColorAll(PIXEL_COUNT, YELLOW);
-  } else if (String(get_color(doc)) == "MAGENTA") {
+  } else if (String(event.color) == "MAGENTA") {
       setColorAll(PIXEL_COUNT, MAGENTA);
-  } else if (String(get_color(doc)) == "CYAN") {
+  } else if (String(event.color) == "CYAN") {
       setColorAll(PIXEL_COUNT, CYAN);
   }
   pixel.show();

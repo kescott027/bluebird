@@ -1,17 +1,28 @@
-#include "Routine.h"
+#define ARDUINOJSON_ENABLE_PROGMEM 0
 
-const char* get_r_active(DynamicJsonDocument doc) {
-    return doc["active"];
-}
+#include <ArduinoJson.h>
 
-const char* get_r_id(DynamicJsonDocument doc) {
-    return doc["_id"];
-}
+class Routine {
 
-const char* get_r_title(DynamicJsonDocument doc) {
-    return doc["title"];
-}
+public:
 
-const char* get_r_v(DynamicJsonDocument doc) {
-    return doc["__v"];
-}
+  const char* _id;
+
+  const char* title;
+
+  const char* active;
+
+  const char* _v;
+
+  Routine() {
+
+  }
+
+  Routine(DynamicJsonDocument doc) {
+    _id = doc["_id"];
+    active = doc["active"];
+    title = doc["title"];
+    _v = doc["__v"];
+  }
+
+};
