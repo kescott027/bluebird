@@ -33,9 +33,18 @@
 #define ALERTING 1
 #define ACKD 2
 
-struct routine_event {
-  char name[]
+struct BluebirdEvent {
+    unsigned long _id;
+    int version;
+    char title[48];
+    uint32_t start_time;
+    uint32_t end_time;
+    char color[16];
 };
+
+BluebirdEvent new_event = {0, 0, char(0), 0, 0, char(0)};
+
+BluebirdEvent next_event = {0, 0, char(0), 0, 0, char(0)};
 
 HttpClient http;
 
@@ -70,6 +79,7 @@ void setup() {
   pinMode(mom_pin, INPUT_PULLDOWN);
   pixel.begin();
   pixel.show();
+  // check on startup?
 }
 
 // loop() runs over and over again, as quickly as it can execute.
@@ -78,20 +88,21 @@ void loop() {
   mom_state = digitalRead(mom_pin);
   if (mom_state != last_button_state) {
     if (mom_state == ACTIVE) {
-    change_led_state();
+    // change_led_state();
+    ackEvent();
     }
     last_button_state = mom_state;
   }
   // delay(1);
-  if (tickCount >= 1000) {
+  if (tickCount >= 60000) {
     pollEvents();
     checkforevents();
   }
 
-  if (tickCount == 500) {
+  /* if (tickCount == 500) {
     setColorAll(PIXEL_COUNT, OFF);
     pixel.show();
-  }
+  } */
   tickCount++;
 }
 
@@ -156,19 +167,37 @@ void pollEvents() {
 }
 
 void checkforevents() {
-
+  // loop through polled active events and determine if new events exist.
+  // if so, put them into the event structure.
 }
 
+
 void store_local_event() {
-  // create start time
-  // create end time
-  // set color
-  // maybe something else
+/*    struct BluebirdEvent next_event = {
+            long _id ;
+            int version;
+            char title[48];
+            uint32_t start_time;
+            uint32_t end_time;
+            char color[16];
+    }; */
+    // create start time
+    // create end time
+    // set color
+    // maybe something else
 }
 
 void ackEvent() {
   // make web request
-  alertStatus = RESTING;
+  int i;
+  for (i=0;i<=3;i++) {
+  setColorAll(PIXEL_COUNT, CYAN);
+  pixel.show();
+  delay(220);
+  setColorAll(PIXEL_COUNT, OFF);
+  pixel.show();
+  delay(80);
+  }
 }
 
 void setColor(int target_pixel, int color) {
