@@ -7,8 +7,8 @@
 
  #include "application.h"
  #include "neopixel.h"
- #include "Event.h"
- #include "Routine.h"
+ #include "Event.cpp"
+ #include "Routine.cpp"
  #include <ArduinoJson.h>
  #include <HttpClient.h>
  // IMPORTANT: Set pixel COUNT, PIN and TYPE
@@ -132,7 +132,7 @@ void pollEvents() {
 
   request.port = 80;
 
-  request.path = "/api/events/5ca78a91c2f8b2001714758d";
+  request.path = "/api/events/5ca78aa0c2f8b2001714758e";
   //request.path = "/api/routines/5ca78a6fc2f8b2001714758c";
   http.get(request, response, headers);
   // json
@@ -140,21 +140,23 @@ void pollEvents() {
 
   deserializeJson(doc, response.body.c_str());
 
-  Serial.println(get_id(doc));
-  Serial.println(get_title(doc));
-  Serial.println(get_color(doc));
+  Event event(doc);
 
-  if (String(get_color(doc)) == "GREEN") {
+  Serial.println(event._id);
+  Serial.println(event.title);
+  Serial.println(event.color);
+
+  if (String(event.color) == "GREEN") {
     setColorAll(PIXEL_COUNT, GREEN);
-  } else if (String(get_color(doc)) == "BLUE") {
+  } else if (String(event.color) == "BLUE") {
       setColorAll(PIXEL_COUNT, BLUE);
-  } else if (String(get_color(doc)) == "RED") {
+  } else if (String(event.color) == "RED") {
       setColorAll(PIXEL_COUNT, RED);
-  } else if (String(get_color(doc)) == "YELLOW") {
+  } else if (String(event.color) == "YELLOW") {
       setColorAll(PIXEL_COUNT, YELLOW);
-  } else if (String(get_color(doc)) == "MAGENTA") {
+  } else if (String(event.color) == "MAGENTA") {
       setColorAll(PIXEL_COUNT, MAGENTA);
-  } else if (String(get_color(doc)) == "CYAN") {
+  } else if (String(event.color) == "CYAN") {
       setColorAll(PIXEL_COUNT, CYAN);
   }
   pixel.show();

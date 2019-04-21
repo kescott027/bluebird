@@ -1,37 +1,43 @@
-#include "Event.h"
+#define ARDUINOJSON_ENABLE_PROGMEM 0
 
-const char* get_id(DynamicJsonDocument doc) {
-    return doc["_id"];
-}
+#include <ArduinoJson.h>
 
-const char* get_title(DynamicJsonDocument doc) {
-    return doc["title"];
-}
+class Event {
 
-const char* get_start_time(DynamicJsonDocument doc) {
-    return doc["start_time"];
-}
+public:
 
-const char* get_end_time(DynamicJsonDocument doc) {
-    return doc["end_time"];
-}
+  const char* _id;
 
-const char* get_color(DynamicJsonDocument doc) {
-    return doc["color"];
-}
+  const char* title;
 
-const char* get_is_start(DynamicJsonDocument doc) {
-    return doc["is_start"];
-}
+  const char* start_time;
 
-const char* get_is_end(DynamicJsonDocument doc) {
-    return doc["is_end"];
-}
+  const char* end_time;
 
-const char* get_parent_routine(DynamicJsonDocument doc) {
-    return doc["parent_routine"];
-}
+  const char* color;
 
-const char* get_v(DynamicJsonDocument doc) {
-    return doc["__v"];
-}
+  const char* is_start;
+
+  const char* is_end;
+
+  const char* parent_routine;
+
+  const char* _v;
+
+  Event() {
+
+  }
+
+  Event(DynamicJsonDocument doc) {
+    _id = doc["_id"];
+    title = doc["title"];
+    start_time = doc["start_time"];
+    end_time = doc["end_time"];
+    color = doc["color"];
+    is_start = doc["is_start"];
+    is_end = doc["is_end"];
+    parent_routine = doc["parent_routine"];
+    _v = doc["__v"];
+  }
+
+};
