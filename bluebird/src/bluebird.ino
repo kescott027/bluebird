@@ -48,6 +48,12 @@ BluebirdEvent next_event = {0, 0, char(0), 0, 0, char(0)};
 
 HttpClient http;
 
+// local timer
+unsigned long sys_time;
+
+// local event array
+Event *event_list = new Event[3];
+
 // Headers currently need to be set at init, useful for API keys etc.
 http_header_t headers[] = {
     { "Content-Type", "application/json" },
@@ -94,9 +100,22 @@ void loop() {
     last_button_state = mom_state;
   }
   // delay(1);
-  if (tickCount >= 60000) {
+  if (tickCount >= 10000) {
     pollEvents();
     checkforevents();
+    // sys_time = millis();
+    // Serial.println(sys_time);
+    for (int k = 0; k < 3; k++) {
+      Serial.println(event_list[k]._id);
+      Serial.println(event_list[k].title);
+      Serial.println(event_list[k].color);
+      Serial.println(event_list[k].start_time);
+      Serial.println(event_list[k].end_time);
+      Serial.println(event_list[k].is_start);
+      Serial.println(event_list[k].is_end);
+      Serial.println(event_list[k].parent_routine);
+      Serial.println(event_list[k]._v);
+    }
   }
 
   /* if (tickCount == 500) {
@@ -127,39 +146,84 @@ void change_led_state() {
 void pollEvents() {
   //make web request
   // if a new event exists, go to ALERTING
-  Serial.println("polling Events...");
+  // Serial.println("polling Events...");
   request.hostname = "bluebird-bluebird-api.herokuapp.com";
 
   request.port = 80;
 
-  request.path = "/api/events/5ca78aa0c2f8b2001714758e";
+  request.path = "/api/events?routine=5cb690a05b4d700017bede09";
   //request.path = "/api/routines/5ca78a6fc2f8b2001714758c";
   http.get(request, response, headers);
   // json
-  DynamicJsonDocument doc(2048);
+  // DynamicJsonDocument doc(8192);
 
-  deserializeJson(doc, response.body.c_str());
+  // deserializeJson(doc, response.body.c_str());
 
-  Event event(doc);
+  // Event event;
 
-  Serial.println(event._id);
-  Serial.println(event.title);
-  Serial.println(event.color);
+  // event_list[0] = event;
 
-  if (String(event.color) == "GREEN") {
-    setColorAll(PIXEL_COUNT, GREEN);
-  } else if (String(event.color) == "BLUE") {
-      setColorAll(PIXEL_COUNT, BLUE);
-  } else if (String(event.color) == "RED") {
-      setColorAll(PIXEL_COUNT, RED);
-  } else if (String(event.color) == "YELLOW") {
-      setColorAll(PIXEL_COUNT, YELLOW);
-  } else if (String(event.color) == "MAGENTA") {
-      setColorAll(PIXEL_COUNT, MAGENTA);
-  } else if (String(event.color) == "CYAN") {
-      setColorAll(PIXEL_COUNT, CYAN);
+  // Serial.println(event._id);
+  // Serial.println(event.title);
+  // Serial.println(event.color);
+  // Serial.println(response.body.c_str());
+
+  // parsing events json
+  String json_result = response.body.c_str();
+  json_result = json_result.substring(1, json_result.length());
+  char result[json_result.length() + 1];
+  strcpy(result, json_result);
+  char* temp = strtok(result, "}");
+  int i = 0;
+  while (temp) {
+    Serial.println("Parsed event:");
+    Serial.println(i);
+    String str_temp(temp);
+    if (str_temp != "]") {
+      str_temp.concat("}");
+      if (str_temp.charAt(0) == ',') {
+        str_temp = str_temp.substring(1, str_temp.length());
+      }
+      Serial.println(str_temp);
+      DynamicJsonDocument *doc = new DynamicJsonDocument(2048);
+      deserializeJson(*doc, str_temp.c_str());
+      Event *event = new Event(*doc);
+      event_list[i] = *event;
+      // Serial.println(event_list[i]._id);
+      // Serial.println(event_list[i].title);
+      // Serial.println(event_list[i].color);
+      // Serial.println(event_list[i].start_time);
+      // Serial.println(event_list[i].end_time);
+      // Serial.println(event_list[i].is_start);
+      // Serial.println(event_list[i].is_end);
+      // Serial.println(event_list[i].parent_routine);
+      // Serial.println(event_list[i]._v);
+      i++;
+      delete doc;
+      delete event;
+    }
+    temp = strtok(NULL, "}");
   }
-  pixel.show();
+
+  // Event event = event_list[0];
+  // Serial.println(event._id);
+  // Serial.println(event.title);
+  // Serial.println(event.color);
+  //
+  // if (String(event.color) == "GREEN") {
+  //   setColorAll(PIXEL_COUNT, GREEN);
+  // } else if (String(event.color) == "BLUE") {
+  //     setColorAll(PIXEL_COUNT, BLUE);
+  // } else if (String(event.color) == "RED") {
+  //     setColorAll(PIXEL_COUNT, RED);
+  // } else if (String(event.color) == "YELLOW") {
+  //     setColorAll(PIXEL_COUNT, YELLOW);
+  // } else if (String(event.color) == "MAGENTA") {
+  //     setColorAll(PIXEL_COUNT, MAGENTA);
+  // } else if (String(event.color) == "CYAN") {
+  //     setColorAll(PIXEL_COUNT, CYAN);
+  // }
+  // pixel.show();
 
   // set next_event_time
   // set next_event_color
