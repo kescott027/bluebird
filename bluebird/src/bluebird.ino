@@ -148,6 +148,7 @@ void pollEvents() {
   // if a new event exists, go to ALERTING
   // Serial.println("polling Events...");
   request.hostname = "bluebird-bluebird-api.herokuapp.com";
+  Serial.println(request.hostname);
 
   request.port = 80;
 
@@ -168,6 +169,7 @@ void pollEvents() {
   // Serial.println(event.color);
   // Serial.println(response.body.c_str());
 
+  Serial.println(response.body);
   // parsing events json
   String json_result = response.body.c_str();
   json_result = json_result.substring(1, json_result.length());
