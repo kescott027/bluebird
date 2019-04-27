@@ -11,6 +11,7 @@
  #include "Routine.cpp"
  #include <ArduinoJson.h>
  #include <HttpClient.h>
+ #include <vector>
  // IMPORTANT: Set pixel COUNT, PIN and TYPE
  #define PIXEL_COUNT 8
  #define PIXEL_PIN D0
@@ -41,6 +42,11 @@ struct BluebirdEvent {
     uint32_t end_time;
     char color[16];
 };
+
+std::vector <const char*> ack;
+
+const char* last_id = "None";
+// last_id = String("None");
 
 BluebirdEvent new_event = {0, 0, char(0), 0, 0, char(0)};
 
@@ -132,6 +138,9 @@ void loop() {
   DynamicJsonDocument doc(8192);
   deserializeJson(doc, response.body.c_str());
   Event event(doc);
+  if (String(event._id) != last_id) {
+  last_id = String(event._id);
+
   if (String(event.color) == "GREEN") {
     setColorAll(PIXEL_COUNT, GREEN);
   } else if (String(event.color) == "BLUE") {
@@ -145,8 +154,9 @@ void loop() {
   } else if (String(event.color) == "CYAN") {
       setColorAll(PIXEL_COUNT, CYAN);
   }
-  pixel.show();
 
+  pixel.show();
+  }
   if (ts >= st + 30) {
     st = millis() / 1000;
     Serial.print("new st is set "); Serial.println(st);
@@ -164,8 +174,22 @@ void loop() {
     pixel.show();
   } */
   Serial.println(ts);
+
   tickCount++;
 }
+
+/*
+bool checkAck(const char* id) {
+  int i;
+  bool result = false;
+  for (i=0; i<ack.size(); i++) {
+    if (ack.at(i) == id) {
+      result = true;
+    }
+  }
+  return result;
+}
+*/
 
 void change_led_state() {
 
@@ -251,6 +275,8 @@ void store_local_event() {
 
 void ackEvent() {
   // make web request
+
+  // visual ack.
   int i;
   for (i=0;i<=3;i++) {
   setColorAll(PIXEL_COUNT, CYAN);
@@ -260,6 +286,8 @@ void ackEvent() {
   pixel.show();
   delay(80);
   }
+  // make it locally acked
+  // ack.push_back(last_id);
 }
 
 void setColor(int target_pixel, int color) {
