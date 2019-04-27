@@ -54,6 +54,8 @@ unsigned long sys_time;
 // local event array
 Event *event_list = new Event[3];
 
+String id_list[] = {"5cb690b85b4d700017bede0a", "5cb690cf5b4d700017bede0b", "5cb690e05b4d700017bede0c"};
+
 // Headers currently need to be set at init, useful for API keys etc.
 http_header_t headers[] = {
     { "Content-Type", "application/json" },
@@ -80,16 +82,34 @@ volatile uint64_t tickCount = 0;
  int ackColor = CYAN;
  int ledState = INACTIVE;
 
+  volatile unsigned long ts;
+  unsigned long st;
+
+  int event_counter = 0;
+
 // setup() runs once, when the device is first turned on.
 void setup() {
   pinMode(mom_pin, INPUT_PULLDOWN);
   pixel.begin();
   pixel.show();
   // check on startup?
+  request.hostname = "bluebird-bluebird-api.herokuapp.com";
+  //Serial.println(request.hostname);
+
+  request.port = 80;
+
+  st = millis() / 1000;
+
+  // request.path = "/api/events?routine=5cb690a05b4d700017bede09";
+  // //request.path = "/api/routines/5ca78a6fc2f8b2001714758c";
+  // http.get(request, response, headers);
 }
 
 // loop() runs over and over again, as quickly as it can execute.
 void loop() {
+  ts = millis() / 1000;
+  int size = *(&id_list + 1) - id_list;
+  if (event_counter <= size) {
   int mom_state = INACTIVE;
   mom_state = digitalRead(mom_pin);
   if (mom_state != last_button_state) {
@@ -100,28 +120,50 @@ void loop() {
     last_button_state = mom_state;
   }
   // delay(1);
-  if (tickCount >= 10000) {
-    pollEvents();
-    checkforevents();
-    // sys_time = millis();
-    // Serial.println(sys_time);
-    for (int k = 0; k < 3; k++) {
-      Serial.println(event_list[k]._id);
-      Serial.println(event_list[k].title);
-      Serial.println(event_list[k].color);
-      Serial.println(event_list[k].start_time);
-      Serial.println(event_list[k].end_time);
-      Serial.println(event_list[k].is_start);
-      Serial.println(event_list[k].is_end);
-      Serial.println(event_list[k].parent_routine);
-      Serial.println(event_list[k]._v);
+  // if (tickCount >= 10000) {
+  //
+  // }
+  String cur_id = id_list[event_counter];
+  String p = "/api/events/";
+  p.concat(cur_id);
+  request.path = p;
+  http.get(request, response, headers);
+  // json
+  DynamicJsonDocument doc(8192);
+  deserializeJson(doc, response.body.c_str());
+  Event event(doc);
+  if (String(event.color) == "GREEN") {
+    setColorAll(PIXEL_COUNT, GREEN);
+  } else if (String(event.color) == "BLUE") {
+      setColorAll(PIXEL_COUNT, BLUE);
+  } else if (String(event.color) == "RED") {
+      setColorAll(PIXEL_COUNT, RED);
+  } else if (String(event.color) == "YELLOW") {
+      setColorAll(PIXEL_COUNT, YELLOW);
+  } else if (String(event.color) == "MAGENTA") {
+      setColorAll(PIXEL_COUNT, MAGENTA);
+  } else if (String(event.color) == "CYAN") {
+      setColorAll(PIXEL_COUNT, CYAN);
+  }
+  pixel.show();
+
+  if (ts >= st + 30) {
+    st = millis() / 1000;
+    Serial.print("new st is set "); Serial.println(st);
+    if (event_counter <= 2) {
+      event_counter++;
     }
   }
+} else {
+  setColorAll(PIXEL_COUNT, OFF);
+  pixel.show();
+}
 
   /* if (tickCount == 500) {
     setColorAll(PIXEL_COUNT, OFF);
     pixel.show();
   } */
+  Serial.println(ts);
   tickCount++;
 }
 
@@ -148,7 +190,7 @@ void pollEvents() {
   // if a new event exists, go to ALERTING
   // Serial.println("polling Events...");
   request.hostname = "bluebird-bluebird-api.herokuapp.com";
-  Serial.println(request.hostname);
+  //Serial.println(request.hostname);
 
   request.port = 80;
 
@@ -161,51 +203,6 @@ void pollEvents() {
   // deserializeJson(doc, response.body.c_str());
 
   // Event event;
-
-  // event_list[0] = event;
-
-  // Serial.println(event._id);
-  // Serial.println(event.title);
-  // Serial.println(event.color);
-  // Serial.println(response.body.c_str());
-
-  Serial.println(response.body);
-  // parsing events json
-  String json_result = response.body.c_str();
-  json_result = json_result.substring(1, json_result.length());
-  char result[json_result.length() + 1];
-  strcpy(result, json_result);
-  char* temp = strtok(result, "}");
-  int i = 0;
-  while (temp) {
-    Serial.println("Parsed event:");
-    Serial.println(i);
-    String str_temp(temp);
-    if (str_temp != "]") {
-      str_temp.concat("}");
-      if (str_temp.charAt(0) == ',') {
-        str_temp = str_temp.substring(1, str_temp.length());
-      }
-      Serial.println(str_temp);
-      DynamicJsonDocument *doc = new DynamicJsonDocument(2048);
-      deserializeJson(*doc, str_temp.c_str());
-      Event *event = new Event(*doc);
-      event_list[i] = *event;
-      // Serial.println(event_list[i]._id);
-      // Serial.println(event_list[i].title);
-      // Serial.println(event_list[i].color);
-      // Serial.println(event_list[i].start_time);
-      // Serial.println(event_list[i].end_time);
-      // Serial.println(event_list[i].is_start);
-      // Serial.println(event_list[i].is_end);
-      // Serial.println(event_list[i].parent_routine);
-      // Serial.println(event_list[i]._v);
-      i++;
-      delete doc;
-      delete event;
-    }
-    temp = strtok(NULL, "}");
-  }
 
   // Event event = event_list[0];
   // Serial.println(event._id);
@@ -226,9 +223,6 @@ void pollEvents() {
   //     setColorAll(PIXEL_COUNT, CYAN);
   // }
   // pixel.show();
-
-  // set next_event_time
-  // set next_event_color
 
   tickCount = 0;
 
