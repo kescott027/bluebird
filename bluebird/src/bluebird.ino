@@ -138,8 +138,12 @@ void loop() {
   DynamicJsonDocument doc(8192);
   deserializeJson(doc, response.body.c_str());
   Event event(doc);
+
   if (String(event._id) != last_id) {
+
   last_id = String(event._id);
+  Serial.println("new id: ");
+  Serial.println(last_id);
 
   if (String(event.color) == "GREEN") {
     setColorAll(PIXEL_COUNT, GREEN);
@@ -157,6 +161,7 @@ void loop() {
 
   pixel.show();
   }
+
   if (ts >= st + 30) {
     st = millis() / 1000;
     Serial.print("new st is set "); Serial.println(st);
